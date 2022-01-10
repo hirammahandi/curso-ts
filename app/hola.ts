@@ -81,3 +81,247 @@ const sumar: (m: number, n: number) => number = (
 
 sumar(3, 4);
 const restar: (m: number, n: number) => number = (m, n) => m - n;
+
+let multiplicar: (a: number, b: number, cb: (result: number) => void) => void;
+
+multiplicar = (a, b, cb) => cb(a * b);
+
+multiplicar(4, 5, (result) => console.log(result));
+
+/* CLASES */
+/* 
+  notas: para declarar un atributo o funcion privado se puede usar private o el caracter # delante del atributo(este ultimo solo funciona en versiones posterios a ES2015)
+*/
+class Rectangulo {
+  ancho: number;
+  private altura: number;
+  readonly diagonal: number;
+  private nombre?: string;
+  // #age:number
+
+  constructor(ancho: number, altura: number, diagonal: number) {
+    this.altura = altura;
+    this.ancho = ancho;
+    this.diagonal = diagonal;
+  }
+
+  // Atributos virtuales: Son funciones q funcionan como atributos de la clase al expecificarle la palabra get delante, y a priori son de solo lectura por tanto no se puede modificar.
+  public get _area(): number {
+    return this.ancho * this.altura;
+  }
+
+  public get _nombre(): string {
+    return (this.nombre ??= "untitled");
+  }
+
+  public set _nombre(v: string) {
+    this.nombre = v;
+  }
+
+  Area() {
+    this.ancho * this.altura;
+  }
+
+  Perimetro() {
+    return 2 * (this.ancho + this.altura);
+  }
+}
+
+const r1 = new Rectangulo(2, 4, 5);
+r1._area;
+r1._nombre = "A";
+console.log(r1._nombre);
+console.log(r1.Perimetro());
+
+/* TIPOS ALIAS */
+type Numero = number;
+
+type LoginCredentials = {
+  username: string;
+  password: string;
+  remember?: boolean;
+};
+
+const credentials: LoginCredentials = {
+  username: "hhernandez",
+  password: "admin",
+  remember: true,
+};
+
+/* TIPOS LITERALES */
+let saludo: "hola" = "hola";
+const permiso: true = true;
+
+type LoginOperation = {
+  op: "login";
+  username: string;
+  pass: string;
+};
+
+const l: LoginOperation = {
+  op: "login",
+  username: "hhernandez",
+  pass: "admin",
+};
+
+/* UNIONES DE TIPOS */
+//! Cuando  utilizamos uniones de tipos en un parametro de una funcion solo vamos a poder acceder a los metodos de ese parametro q sean comunes para esos tipos porq typescript no sabe q tipo de valor es especificamente el parametro q se le esta pasando.
+const convertir: (valor: string | number) => void = (valor): void => {
+  // Maneras de preguntar de q tipo es el parametro para poder acceder a todos sus metodos.
+  if (typeof valor === "string") {
+    console.log(valor.concat("hola mundo"));
+  } else valor.toFixed(2);
+  console.log(valor);
+};
+
+convertir("a");
+convertir(3);
+
+type A = {
+  uno: boolean;
+  dos: boolean;
+};
+
+type B = {
+  tres: boolean;
+};
+
+let valor: A | B = { uno: true, dos: false };
+valor = { tres: true };
+
+/* UNIONES DISCRIMINANTES */
+type OperacionSuma = {
+  sumando1: number;
+  sumando2: number;
+  tipo: "suma"; //* guarda
+};
+
+type OperacionMultiplicar = {
+  operando1: number;
+  operando2: number;
+  tipo: "multiplicar"; //* guarda
+};
+
+type Operacion = OperacionSuma | OperacionMultiplicar;
+
+//! Otra manera de preguntar de q tipo es un parametro es creando una guarda en el type
+const operar: (o: Operacion) => number = (o) => {
+  if (o.tipo === "suma") return o.sumando1 + o.sumando2;
+  else return o.operando1 * o.operando2;
+};
+
+let result: number = operar({
+  operando1: 1,
+  operando2: 3,
+  tipo: "multiplicar",
+});
+console.log(result);
+
+/* INTERSECCIONES DE TIPOS */
+
+type Coordenada = [x: number, y: number];
+type Vector = [x: number, y: number];
+
+type Posicionable = {
+  posicion: Coordenada;
+};
+
+type Movible = {
+  velocidad: Vector;
+  aceleracion: Vector;
+};
+
+type MovibleYPosicionable = Posicionable & Movible;
+
+let obj: MovibleYPosicionable = {
+  aceleracion: [1, 2],
+  posicion: [2, 3],
+  velocidad: [3, 4],
+};
+
+/* INTERFACES */
+interface UserData {
+  readonly username: string;
+  created_at?: Date;
+  superuser: boolean;
+  //*  Dos formas de escribir metodos en una interfaz y hacerlas opcionales
+  logout?(): void;
+  rename?: (username: string) => void;
+}
+
+const login = (): UserData => ({
+  username: "hiram",
+  created_at: new Date(),
+  superuser: true,
+  logout: () => console.log("logout"),
+  rename: (username) => console.log(username),
+});
+
+const data: UserData = login();
+
+//! Dos formas de acceder a los metodos de una propiedad opcional
+data.created_at?.getDate(); //* chekea q el atributo exsite y me devuelve lo q haga el metodo q accedi sino continua y no da error, asi nos aseguramos q pueda o no exisitir
+data.created_at!.toDateString(); //* solo es recomendable usarlo si o si va existir la propiedad, en este caso created_at
+
+/* INTERFACES CON CLASES */
+interface Shape {
+  readonly sides: number;
+  area(): number;
+  perimeter(): number;
+}
+/* Las clases permiten implementar varias interfaces, separandolas por comas */
+class Rectangle implements Shape {
+  sides: number = 4;
+  /* //* poniendo los amodificadores de atributos directamente en el constructor permite q no sea necesario inicializar los valores de los atributos q tenga la clase*/
+  constructor(readonly width: number, readonly height: number) {}
+
+  area(): number {
+    return this.width * this.height;
+  }
+  perimeter(): number {
+    return 2 * (this.width + this.height);
+  }
+}
+
+const process = (s: Shape) => console.log({ area: s.area() });
+const r = new Rectangle(1, 2);
+process(r);
+
+/* HERENCIA Y ESPECIALIZACION DE INTERFACES */
+interface Vehiculo {
+  readonly fabricante: string;
+  arrancar(): void;
+  repostar(): void;
+  detener(): void;
+}
+
+interface VehiculoTerrestre extends Vehiculo {
+  conducir(): void;
+}
+
+interface VehiculoMaritimo extends Vehiculo {
+  sonarSirena(): void;
+}
+
+/* INTERFACES Y TIPOS INDIZIDAS */
+
+interface Indizable_1 {
+  [index: number]: boolean;
+}
+
+const indizable_1: Indizable_1 = {
+  0: true,
+};
+
+indizable_1[0];
+
+type Indizable_2 = {
+  [key in "text" | "date"]: string | Date;
+};
+
+let indizable: Indizable_2 = {
+  text: "hola",
+  date: new Date(),
+};
+
+indizable.date;
