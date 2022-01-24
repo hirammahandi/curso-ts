@@ -367,4 +367,3 @@ function use(w: Window) {
   console.log(w.accountID);
 }
 
-aaaa
