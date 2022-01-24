@@ -325,3 +325,44 @@ let indizable: Indizable_2 = {
 };
 
 indizable.date;
+
+// INTERFACES: FUNCIONES Y TIPOS HIBRIDOS
+// Comparator es una interfaz hibrida q permite tipar una variable y compoertarse com funcion y ademas tener los atributos definidos en la interfaz como adicionales, para q esto funcione obligatoriamente tiene q estar estructurado la funcion cq funciona como atributo de la siguiente manera
+interface Comparator {
+  (first: string, second: string): number;
+  algorithm: string;
+  safe: boolean;
+}
+
+type Comparator_Type = {
+  (first: string, second: string): number;
+  algorithm: string;
+  safe: boolean;
+};
+
+const sort = (c: Comparator) => {
+  const out = c("1", "2");
+  console.log(`Ordenando con el criterio ${c.algorithm}:${out}`);
+  return out;
+};
+
+// SE PUEDEN CREAR VARIAS INTERFACES CON EL MISMO NOMBRE Y LO Q HACE ES HEREDAR LAS PROPIEADES DE CADA INTEFAZ
+interface X {
+  a: string;
+}
+interface X {
+  b: string;
+}
+
+let c: X;
+
+// c.a
+// c.b
+
+interface Window {
+  accountID: number;
+}
+
+function use(w: Window) {
+  console.log(w.accountID);
+}
